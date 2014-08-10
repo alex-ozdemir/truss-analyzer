@@ -3,22 +3,33 @@
 # 9 August 2014
 
 class Node(object):
-    def __init__(self, position, connections = []):
+    def __init__(self, position, members = []):
         self.position = position
-        self.connections = connections
-    def addConnection(self, connection):
-        if connection in self.connections:
-            raise Exception("Tried to add the node " + str(connection) + \
+        self.members = members
+    def addConnection(self, member):
+        if member in self.members:
+            raise Exception("Tried to add the node " + str(member) + \
                             " to the connections of" + \
                             str(self) + ", but it was already there")
         else:
-            self.connections.append(connection)
+            self.members.append(member)
     def __eq__(self, other):
         return self.position.__eq__(other.position)
     def __str__(self):
-        return "Node at " + str(self.position) + ", connected to: " + str(self.connections)
+        return "Node at " + str(self.position) + ", connected to: " + str(self.members)
     def __repr__(self):
-        return "Node(" + repr(self.position) +", " + repr(self.connections) + ")"
+        return "Node(" + repr(self.position) +", " + repr(self.members) + ")"
+
+class Member(object):
+    def __init__(self, node1, node2, stress = None):
+        self.node1 = node1
+        self.node2 = node2
+        self.stress = stress
+    def hasNode(self, node):
+        return node in [self.node1, self.node2]
+    def __eq__(self, other):
+        return set(self.node1, self.node2) == set(other.node1, other.node2)
+    
 
 class Truss(object):
     def __init__(self, nodes = []):
@@ -33,9 +44,7 @@ class Truss(object):
         else:
             self.nodes.append(node)
     def __eq__(self, other):
-        return len(self.nodes) == len(other.nodes) and \
-               all(map(lambda nodePair: nodePair[0] == nodePair[1],\
-                    zip(self.nodes, other.nodes)))
+        return set(self.nodes) == set(other.nodes)
     def __str__(self):
         result = "Truss with nodes: \n"
         for node in self.nodes:
