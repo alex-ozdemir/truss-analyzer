@@ -12,6 +12,12 @@ class Node(object):
         return self.position.__eq__(other.position)
     def __str__(self):
         return "Node at " + str(self.position) + ", connected to: " + str(self.members)
+    def __repr__(self):
+        return "Node(" +\
+               repr(self.position) + ", " + \
+               repr(self.loads) + ", " + \
+               repr(self.fixedX) + ", " + \
+               repr(self.fixedY) + ")"
 
 class Member(object):
     def __init__(self, node1, node2, stress = None):
@@ -22,12 +28,19 @@ class Member(object):
         return node in [self.node1, self.node2]
     def __eq__(self, other):
         return set(self.node1, self.node2) == set(other.node1, other.node2)
-    
+    def __str__(self):
+        return "Member from " + str(self.node1.position) + " to " + \
+               str(self.node2.position)
+    def __repr__(self):
+        return "Member(" + \
+               repr(self.node1) + ", " + \
+               repr(self.node2) + ", " + \
+               repr(self.stress) + ")"
 
 class Truss(object):
-    def __init__(self):
-        self.nodes = []
-        self.members = []
+    def __init__(self, nodes = [], members = []):
+        self.nodes = nodes
+        self.members = members
     def createNode(self, position):
         self.addNode(Node(position))
     def addNode(self, node):
@@ -47,11 +60,22 @@ class Truss(object):
     def __eq__(self, other):
         return set(self.nodes) == set(other.nodes)
     def __str__(self):
-        result = "Truss with nodes: \n"
+        return "Truss: \n" + self.nodeStr() + self.memberStr()
+    def nodeStr(self):
+        result = " Nodes: \n"
         for node in self.nodes:
-            result += str(node) + ",\n"
-        return result[:-2]
-
+            result += "   " + str(node) + ",\n"
+        return result[:-2] + "\n"
+    def memberStr(self):
+        result = " Members: \n"
+        for member in self.members:
+            result += "   " + str(member) + ",\n"
+        return result[:-2] + "\n"
+    def __repr__(self):
+        return "Truss(" + \
+               repr(self.nodes) + ", " + \
+               repr(self.members) + ")"
+        
 def test_init():
     a = Node((2, 3), [])
 def test_str():
