@@ -37,7 +37,7 @@ class Member(object):
     def hasNode(self, node):
         return node in [self.node1, self.node2]
     def __eq__(self, other):
-        return set(self.node1, self.node2) == set(other.node1, other.node2) and \
+        return sameElements([self.node1, self.node2], [other.node1, other.node2]) and \
                self.stress == other.stress
     def __str__(self):
         return "Member from " + str(self.node1.position) + " to " + \
@@ -69,8 +69,8 @@ class Truss(object):
             self.members.append(newMember)
             
     def __eq__(self, other):
-        return set(self.nodes) == set(other.nodes) and \
-               set(self.members) == set(other.members)
+        return sameElements(self.nodes, other.nodes) and \
+               sameElements(self.members, other.members)
     def __str__(self):
         return "Truss: \n" + self.nodeStr() + self.memberStr()
     def nodeStr(self):
@@ -87,7 +87,10 @@ class Truss(object):
         return "Truss(" + \
                repr(self.nodes) + ", " + \
                repr(self.members) + ")"
-        
+
+def sameElements(l1, l2):
+    return all([lambda x: x in l1 for e in l2]) and \
+           all([lambda x: x in l2 for e in l1])
 def test_init():
     a = Node((2, 3), [])
 def test_str():
