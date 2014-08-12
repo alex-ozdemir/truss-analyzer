@@ -3,22 +3,15 @@
 # 9 August 2014
 
 class Node(object):
-    def __init__(self, position, members = []):
+    def __init__(self, position, loads = [], fixedX = False, fixedY = False):
         self.position = position
-        self.members = members
-    def addConnection(self, member):
-        if member in self.members:
-            raise Exception("Tried to add the node " + str(member) + \
-                            " to the connections of" + \
-                            str(self) + ", but it was already there")
-        else:
-            self.members.append(member)
+        self.loads = loads
+        self.fixedX = fixedX
+        self.fixedY = fixedY
     def __eq__(self, other):
         return self.position.__eq__(other.position)
     def __str__(self):
         return "Node at " + str(self.position) + ", connected to: " + str(self.members)
-    def __repr__(self):
-        return "Node(" + repr(self.position) +", " + repr(self.members) + ")"
 
 class Member(object):
     def __init__(self, node1, node2, stress = None):
@@ -32,8 +25,9 @@ class Member(object):
     
 
 class Truss(object):
-    def __init__(self, nodes = []):
-        self.nodes = nodes
+    def __init__(self):
+        self.nodes = []
+        self.members = []
     def createNode(self, position):
         self.addNode(Node(position))
     def addNode(self, node):
@@ -43,6 +37,13 @@ class Truss(object):
                             " but it was already there")
         else:
             self.nodes.append(node)
+    def connectNodes(self, node1, node2):
+        newMember = Member(node1, node2)
+        if newMember not in self.members and\
+           node1 in self.nodes and\
+           node2 in self.nodes:
+            self.members.append(newMember)
+            
     def __eq__(self, other):
         return set(self.nodes) == set(other.nodes)
     def __str__(self):
@@ -50,8 +51,6 @@ class Truss(object):
         for node in self.nodes:
             result += str(node) + ",\n"
         return result[:-2]
-    def __repr__(self):
-        return "Truss(" + repr(self.nodes) + ")"
 
 def test_init():
     a = Node((2, 3), [])
