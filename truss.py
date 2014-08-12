@@ -9,9 +9,19 @@ class Node(object):
         self.fixedX = fixedX
         self.fixedY = fixedY
     def __eq__(self, other):
-        return self.position.__eq__(other.position)
+        return self.position == other.position and \
+               self.loads == other.loads and \
+               self.fixedX == other.fixedX and \
+               self.fixedY == other.fixedY
     def __str__(self):
-        return "Node at " + str(self.position) + ", connected to: " + str(self.members)
+        result = "Node at " + str(self.position)
+        if len(self.loads) > 0:
+            result += ", with loads " + str(self.loads)
+        if self.fixedX:
+            result += ", with X fixed"
+        if self.fixedY:
+            result += ", with Y fixed"
+        return result
     def __repr__(self):
         return "Node(" +\
                repr(self.position) + ", " + \
@@ -27,7 +37,8 @@ class Member(object):
     def hasNode(self, node):
         return node in [self.node1, self.node2]
     def __eq__(self, other):
-        return set(self.node1, self.node2) == set(other.node1, other.node2)
+        return set(self.node1, self.node2) == set(other.node1, other.node2) and \
+               self.stress == other.stress
     def __str__(self):
         return "Member from " + str(self.node1.position) + " to " + \
                str(self.node2.position)
@@ -46,7 +57,7 @@ class Truss(object):
     def addNode(self, node):
         if node in self.nodes:
             raise Exception("Tried to add the node " + str(node) + \
-                            " to the truss " + str(self) + \
+                            " to the truss \n" + str(self) + \
                             " but it was already there")
         else:
             self.nodes.append(node)
@@ -58,7 +69,8 @@ class Truss(object):
             self.members.append(newMember)
             
     def __eq__(self, other):
-        return set(self.nodes) == set(other.nodes)
+        return set(self.nodes) == set(other.nodes) and \
+               set(self.members) == set(other.members)
     def __str__(self):
         return "Truss: \n" + self.nodeStr() + self.memberStr()
     def nodeStr(self):
@@ -107,7 +119,11 @@ def test_duplicate_connection():
 def test_repr():
     t = Truss()
     t.createNode((4,5))
+    print "Original: "
+    print t
+    print "Representation: "
     print repr(t)
+    print "Recreated: "
     print eval(repr(t))
     if eval(repr(t)) == t:
         print "test passed"
