@@ -2,6 +2,11 @@
 # aozdemir@hmc.edu
 # 9 August 2014
 
+# This file contains 3 Classes:
+#  Truss - an engineering trus, composed of nodes and members
+#  Node - a joint between members in a truss
+#  Member - a connection between nodes in a truss
+
 class Node(object):
     def __init__(self, position, loads = [], fixedX = False, fixedY = False):
         self.position = position
