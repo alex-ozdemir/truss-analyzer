@@ -86,8 +86,11 @@ class Truss(object):
         for n in self.nodes:
             if node == n:
                 self.nodes.remove(n)
+                self.removeMembers(n)
                 return
         raise Exception("The node %s does not exist in %s" % (str(node), str(self)))
+    def removeMembers(self, node):
+        self.members[:] = [member for member in self.members if not member.hasNode(node)]
     def connectNodes(self, node1, node2):
         newMember = Member(node1, node2)
         if newMember not in self.members:
@@ -218,5 +221,3 @@ def simpleTruss():
     print "t:\n",t
     return t
 t = simpleTruss()
-m = t.getEquilibriumMatrix()
-print "\n","\n",m
