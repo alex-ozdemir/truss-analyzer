@@ -52,16 +52,22 @@ class Matrix(object):
             scale = 1.0 / self.matrix[r][c]
             self.scaleRow(r, scale)
         else:
-            for r_nonzero in range(r + 1, self.height):
-                if self.matrix[r_nonzero][c] != 0:
-                    scale = 1.0 / self.matrix[r_nonzero][c]
-                    self.addMultipleOfRow(r, r_nonzero, scale)
-            raise Exception("The was an all-zero column in the matrix")
+            r_nonzero = self.findNonZeroRowNum(r, c)
+            scale = 1.0 / self.matrix[r_nonzero][c]
+            self.addMultipleOfRow(r, r_nonzero, scale)
+    def findNonZeroRowNum(self, r, c):
+        for r_nonzero in range(r + 1, self.height):
+            if self.matrix[r_nonzero][c] != 0:
+                return r_nonzero
+        raise Exception("The was an all-zero column in the matrix")
     def makeCell0(self, r, c):
         if c < self.height:
             if self.matrix[r][c] != 0:
                 scale = -self.matrix[r][c] / self.matrix[c][c]
                 self.addMultipleOfRow(r, c, scale)
-    
+    def __getitem__(self, i):
+        return self.matrix[i]
+    def __iter__(self):
+        return iter(self.matrix)
     def __str__(self):
         return join([str(row) for row in self.matrix], "\n")
