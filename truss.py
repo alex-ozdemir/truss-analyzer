@@ -75,6 +75,19 @@ class Truss(object):
                             " but it was already there")
         else:
             self.nodes.append(node)
+    def getNodeNear(self, position, radius):
+        p = Vector(position)
+        nearestNode = min([((n.position - p).length, n) for n in self.nodes])[1]
+        if (nearestNode.position - p).length < radius:
+            return nearestNode
+        else:
+            return None
+    def deleteNode(self, node):
+        for n in self.nodes:
+            if node == n:
+                self.nodes.remove(n)
+                return
+        raise Exception("The node %s does not exist in %s" % (str(node), str(self)))
     def connectNodes(self, node1, node2):
         newMember = Member(node1, node2)
         if newMember not in self.members:
