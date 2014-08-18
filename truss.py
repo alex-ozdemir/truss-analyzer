@@ -75,6 +75,12 @@ class Truss(object):
                             " but it was already there")
         else:
             self.nodes.append(node)
+    def getNodeAt(self, position):
+        tempNode = Node(position)
+        for node in self.nodes:
+            if tempNode == node:
+                return node
+        return None
     def getNodeNear(self, position, radius):
         p = Vector(position)
         nearestNode = min([((n.position - p).length, n) for n in self.nodes])[1]
