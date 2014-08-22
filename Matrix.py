@@ -28,20 +28,22 @@ class Matrix(object):
     def rref(self):
         self.toFloat()
         for c in range(self.width):
+            self.makeNonZeroDiagonal(c)
             for r in range(self.height):
                 self.normalizeCell(r, c)
     def toFloat(self):
         for r in range(self.height):
             for c in range(self.width):
                 self.matrix[r][c] = float(self.matrix[r][c])
-                
     def addMultipleOfRow(self, rToChange, rToAdd, multiple = 1):
         for c in range(self.width):
             self.matrix[rToChange][c] += multiple * self.matrix[rToAdd][c]
     def scaleRow(self, r, scale):
         for c in range(self.width):
             self.matrix[r][c] *= scale
-
+    def makeNonZeroDiagonal(self, c):
+        if  c < self.height and self.matrix[c][c] == 0:
+            self.addMultipleOfRow(c, self.findNonZeroRowNum(c))           
     def normalizeCell(self, r, c):
         if r == c:
             self.makeCell1(r, c)
@@ -51,12 +53,8 @@ class Matrix(object):
         if self.matrix[r][c] != 0:
             scale = 1.0 / self.matrix[r][c]
             self.scaleRow(r, scale)
-        else:
-            r_nonzero = self.findNonZeroRowNum(r, c)
-            scale = 1.0 / self.matrix[r_nonzero][c]
-            self.addMultipleOfRow(r, r_nonzero, scale)
-    def findNonZeroRowNum(self, r, c):
-        for r_nonzero in range(r + 1, self.height):
+    def findNonZeroRowNum(self, c):
+        for r_nonzero in range(self.height):
             if self.matrix[r_nonzero][c] != 0:
                 return r_nonzero
         raise Exception("The was an all-zero column in the matrix")

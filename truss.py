@@ -88,6 +88,11 @@ class Truss(object):
             return nearestNode
         else:
             return None
+    def getMemberWithNodes(self, node1, node2):
+        for member in self.members:
+            if sameElements([node1, node2], [member.node1, member.node2]):
+                return member
+        return None
     def deleteNode(self, node):
         for n in self.nodes:
             if node == n:
@@ -98,12 +103,14 @@ class Truss(object):
     def removeMembers(self, node):
         self.members[:] = [member for member in self.members if not member.hasNode(node)]
     def connectNodes(self, node1, node2):
+        if (node1 == node2):
+            raise Exception("The two nodes are equivalent")
         newMember = Member(node1, node2)
         if newMember not in self.members:
             if node1 in self.nodes and node2 in self.nodes:
                 self.members.append(newMember)
             else:
-                 raise Exception("Tried to add the  " + str(newMember) + \
+                raise Exception("Tried to add the  " + str(newMember) + \
                                  " to the truss, but those nodes don't exist")
         else:
             raise Exception("Tried to add the  " + str(newMember) + \
