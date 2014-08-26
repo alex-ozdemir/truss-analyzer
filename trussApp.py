@@ -24,6 +24,7 @@ class TrussApp(Frame):
         self.pack()
         self.setupWindow()
         self.createWidgets()
+        self.createMenu()
         self.arrangeWidgets()
 
     def setupWindow(self):
@@ -35,20 +36,22 @@ class TrussApp(Frame):
         self.fileDialogOptions = options = {}
         options['defaultextension'] = '.truss'
         options['filetypes'] = [('truss files', '.truss'), ('all files', '.*')]
-        options['initialdir'] = 'C:\\'
+        options['initialdir'] = 'C:\\Users\\Alex'
         options['parent'] = root
-        options['title'] = 'This is a title'
+        options['title'] = 'Select a Truss file to save or load'
 
     def createWidgets(self):
         self.display = TrussDisplay(self)
         self.controls = TrussControls(self, self.display)
         self.display.controls = self.controls
+
+    def createMenu(self):
         self.menuBar = Menu(self.master)
         self.fileMenu = Menu(self.menuBar, tearoff = 0)
         self.fileMenu.add_command(label = "Save As", command = self.save)
         self.fileMenu.add_command(label = "Load", command = self.load)
         self.menuBar.add_cascade(label = "File", menu = self.fileMenu)
-        self.master.config(menu = self.menuBar)
+        self.master.config(menu = self.menuBar)        
 
     def save(self):
         fileName = tkFileDialog.asksaveasfilename(**self.fileDialogOptions)
@@ -62,9 +65,8 @@ class TrussApp(Frame):
         f.close()
         temp = eval(string)
         print temp
-        self.display.pack_forget()
-        self.display = TrussDisplay(self, temp.nodes, temp.members)
-        self.display.pack(side = LEFT)
+        self.display.removeAll()
+        self.display.populate(temp.nodes, temp.members)
         
     def arrangeWidgets(self):
         self.display.pack({"side": "left"})
@@ -107,7 +109,6 @@ class TrussControls(Frame):
         self.display.refreshMembers()
     def setState(self, state):
         self.display.state = state
-        print self.display.state
 class NodeEdit(Frame):
     def __init__(self, master, display):
         Frame.__init__(self, master)
@@ -126,8 +127,8 @@ class NodeEdit(Frame):
         self.fixedX = LabelCheck(self, "Fix X: ")
         self.fixedY = LabelCheck(self, "Fix Y: ")
         self.load = LabelEntry(self, "Load: ", 10)
-        self.update = Button(self, text = "Update", command=self.updateNode)
-        self.remove = Button(self, text = "Remove", command=self.deleteNode)
+        self.update = Button(self, text = "Update", command = self.updateNode)
+        self.remove = Button(self, text = "Remove", command = self.deleteNode)
     def arrangeWidgets(self):
         self.label.pack(side = TOP)
         self.positionY.pack(side = TOP)
@@ -153,8 +154,9 @@ class NodeEdit(Frame):
         self.node.fixedY = 1 == self.fixedY.get()
         self.node.loads[:] = eval(self.load.get())
         self.display.refresh(self.node)
+        self.display.selectNode(self.node)
     def deleteNode(self):
-        self.display.deleteNode(self.node.position)
+        self.display.deleteNodeAt(self.node.position)
         
 class TrussDisplay(Truss, Canvas):
     def __init__(self, master = None, nodes = [], members = []):
@@ -165,6 +167,7 @@ class TrussDisplay(Truss, Canvas):
         self.setupGeometry()
         self.setupListeners()
     def populate(self, nodes, members):
+        self.selectedNode = None
         self.createNodes(nodes)
         self.createMembers(members)
     def createNodes(self, nodes):
@@ -172,7 +175,9 @@ class TrussDisplay(Truss, Canvas):
             self.createNode(node)
     def createMembers(self, members):
         for member in members:
-            self.connectNodes(member.node1, member.node2)
+            node1 = self.getNodeAt(member.node1.position)
+            node2 = self.getNodeAt(member.node2.position)
+            self.connectNodes(node1, node2)
     def setupGeometry(self):
         self['width'] = 700
         self['height'] = 580
@@ -185,27 +190,39 @@ class TrussDisplay(Truss, Canvas):
         return self.winfo_height()
     def getWidth(self):
         return self.winfo_width()
+    def selectNode(self, node):
+        if self.selectedNode:
+            self.itemconfig(self.selectedNode.UIElement, fill = "black")
+            self.selectedNode = None
+        if node:
+            self.itemconfig(node.UIElement, fill = "blue")
+            self.selectedNode = node  
+            self.controls.setNodeDisplay(node)          
     def click(self, event):
         if self.state == STATE_ADD_NODE:
             self.createNode(Vector((event.x, event.y)))
+            node = self.getNodeAt(Vector((event.x, event.y)))
+            if node:
+                self.selectNode(node)
         elif self.state == STATE_SELECT_NODE:
             node = self.getNodeNear(Vector((event.x, event.y)), NODE_SELECT_RADIUS)
             if node:
-                self.controls.setNodeDisplay(node)
+                self.selectNode(node)
         elif self.state == STATE_ADD_MEMBER:
             node = self.getNodeNear(Vector((event.x, event.y)), NODE_SELECT_RADIUS)
             if node:
                 self.tempNode = node
                 self.state = STATE_COMPLETE_MEMBER
+                self.selectNode(node)
         elif self.state == STATE_COMPLETE_MEMBER:
             node = self.getNodeNear(Vector((event.x, event.y)), NODE_SELECT_RADIUS)
             if node:
                 self.connectNodes(self.tempNode, node)
-                self.state = STATE_ADD_MEMBER            
+                self.state = STATE_ADD_MEMBER
+                self.selectNode(node)            
         else:
             print "Error - click not handled properly"
-        #print "State: %d" % (self.state)
-       #print "Truss: \n", self
+        print self
     def connectNodes(self, node1, node2):
         try:
             self.trussclass.connectNodes(self, node1, node2)
@@ -213,15 +230,15 @@ class TrussDisplay(Truss, Canvas):
             print "Could not create member"
         self.refresh(self.getMemberWithNodes(node1, node2))
     def createNode(self, position):
-        #try:
+        try:
             if type(position) == Node:
                 self.addNode(position)
                 position = position.position
             else:
                 self.trussclass.createNode(self, position)
             self.refresh(self.getNodeAt(position))
-        #except:
-        #    print "error creating node"
+        except:
+            print "error creating node"
     def refreshMembers(self):
         for member in self.members:
             self.refresh(member)
@@ -239,7 +256,9 @@ class TrussDisplay(Truss, Canvas):
                                      position[0] + NODE_RADIUS, \
                                      position[1] + NODE_RADIUS, \
                                      fill = "black")
-            if(type(item) == Member):
+                for member in self.getMembersWithNode(node):
+                    self.refresh(member)
+            elif(type(item) == Member):
                 member = item
                 try:
                     self.delete(member.line)
@@ -253,13 +272,24 @@ class TrussDisplay(Truss, Canvas):
                     member.forceLabel = self.create_text((p1[0] + p2[0]) / 2.0 + 10,
                                                          (p1[1] + p2[1]) / 2.0 + 10,
                                                          text = str(member.force))
-    def deleteNode(self, position):
-        node = self.getNodeNear(position, NODE_SELECT_RADIUS)
+    def removeAll(self):
+        positions = [node.position for node in self.nodes]
+        for position in positions:
+            self.deleteNodeAt(position)
+    def deleteNodeAt(self, position):
+        node = self.getNodeAt(position)
         if node != None:
-            self.trussclass.deleteNode(self, node)
+            super(TrussDisplay, self).deleteNode(node)
             self.delete(node.UIElement)
         else:
             print "No Node"
+    def deleteMember(self, member):
+        self.delete(member.line)
+        try:
+            self.delete(member.forceLabel)
+        except:
+            pass
+        super(TrussDisplay, self).deleteMember(member)
     
 root = Tk()
 app = TrussApp(root)

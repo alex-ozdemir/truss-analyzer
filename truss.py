@@ -93,15 +93,21 @@ class Truss(object):
             if sameElements([node1, node2], [member.node1, member.node2]):
                 return member
         return None
+    def getMembersWithNode(self, node):
+        return [member for member in self.members if member.hasNode(node)]
     def deleteNode(self, node):
         for n in self.nodes:
             if node == n:
                 self.nodes.remove(n)
-                self.removeMembers(n)
+                self.deleteMembers(n)
                 return
         raise Exception("The node %s does not exist in %s" % (str(node), str(self)))
-    def removeMembers(self, node):
-        self.members[:] = [member for member in self.members if not member.hasNode(node)]
+    def deleteMembers(self, node):
+        toDelete = self.getMembersWithNode(node)
+        for member in toDelete:
+            self.deleteMember(member)
+    def deleteMember(self, member):
+        self.members.remove(member)
     def connectNodes(self, node1, node2):
         if (node1 == node2):
             raise Exception("The two nodes are equivalent")
