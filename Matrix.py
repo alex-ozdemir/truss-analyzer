@@ -7,11 +7,15 @@
 
 from string import join
 
+def negligible(x):
+    return abs(x) < 0.00001
+
 class Matrix(object):
     def __init__(self, matrix):
         """Creates a matrix as a list of row/lists"""
         self.matrix = matrix
         self.setAndValidateDimensions()
+        print "Matrix\n", self
         
     def setAndValidateDimensions(self):
         self.height = len(self.matrix)
@@ -31,6 +35,7 @@ class Matrix(object):
             self.makeNonZeroDiagonal(c)
             for r in range(self.height):
                 self.normalizeCell(r, c)
+                print "\n", self
     def toFloat(self):
         for r in range(self.height):
             for c in range(self.width):
@@ -42,7 +47,7 @@ class Matrix(object):
         for c in range(self.width):
             self.matrix[r][c] *= scale
     def makeNonZeroDiagonal(self, c):
-        if  c < self.height and self.matrix[c][c] == 0:
+        if  c < self.height and negligible(self.matrix[c][c]):
             self.addMultipleOfRow(c, self.findNonZeroRowNum(c))           
     def normalizeCell(self, r, c):
         if r == c:
@@ -50,17 +55,20 @@ class Matrix(object):
         else:
             self.makeCell0(r, c)
     def makeCell1(self, r, c):
-        if self.matrix[r][c] != 0:
+        if not negligible(self.matrix[r][c]):
             scale = 1.0 / self.matrix[r][c]
             self.scaleRow(r, scale)
+        else:
+            print self
+            raise Exception("Zero Diagonal")
     def findNonZeroRowNum(self, c):
-        for r_nonzero in range(self.height):
-            if self.matrix[r_nonzero][c] != 0:
+        for r_nonzero in range(c, self.height):
+            if not negligible(self.matrix[r_nonzero][c]):
                 return r_nonzero
         raise Exception("The was an all-zero column in the matrix")
     def makeCell0(self, r, c):
         if c < self.height:
-            if self.matrix[r][c] != 0:
+            if not negligible(self.matrix[r][c]):
                 scale = -self.matrix[r][c] / self.matrix[c][c]
                 self.addMultipleOfRow(r, c, scale)
     def __getitem__(self, i):
