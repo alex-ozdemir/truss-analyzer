@@ -3,6 +3,7 @@
 # 9 August 2014
 from Vector import Vector
 from Matrix import Matrix
+from Geometry import distFromPointToLine
 from operator import add
 
 # This file contains 3 Classes:
@@ -16,6 +17,8 @@ class Node(object):
         self.loads =[Vector(load) for load in loads]
         self.fixedX = fixedX
         self.fixedY = fixedY
+    def distance(self, position):
+        return (self.position - position).length
     def __eq__(self, other):
         return self.position == other.position
     def __str__(self):
@@ -41,6 +44,8 @@ class Member(object):
         self.force = force
     def hasNode(self, node):
         return node in [self.node1, self.node2]
+    def distance(self, position):
+        return distFromPointToLine(position, self.node1.position, self.node2.position)
     def getVector(self, node):
         if node == self.node1:
             return self.node1.position - self.node2.position
@@ -83,8 +88,11 @@ class Truss(object):
         return None
     def getNodeNear(self, position, radius):
         p = Vector(position)
-        nearestNode = min([((n.position - p).length, n) for n in self.nodes])[1]
-        if (nearestNode.position - p).length < radius:
+        nodesAndDistances = [(n.distance(p), n) for n in self.nodes]
+        if len(nodesAndDistances) == 0:
+            return None
+        nearestNode = min(nodesAndDistances)[1]
+        if nearestNode.distance(p) < radius:
             return nearestNode
         else:
             return None
@@ -95,6 +103,16 @@ class Truss(object):
         return None
     def getMembersWithNode(self, node):
         return [member for member in self.members if member.hasNode(node)]
+    def getMemberNear(self, position, radius):
+        p = Vector(position)
+        membersAndDistances = [(m.distance(p), m) for m in self.members]
+        if len(membersAndDistances) == 0:
+            return None
+        nearestMember = min(membersAndDistances)[1]
+        if (nearestMember.distance(p) < radius):
+            return nearestMember
+        else:
+            return None
     def deleteNode(self, node):
         for n in self.nodes:
             if node == n:

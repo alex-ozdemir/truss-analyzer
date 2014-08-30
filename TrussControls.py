@@ -19,8 +19,10 @@ class TrussControls(Frame):
         self.createAddNodeButton()
         self.createSelectNodeButton()
         self.createAddMemberButton()
+        self.createSelectMemberButton()
         self.createComputeButton()
         self.nodeEdit = NodeEdit(self, self.display)
+        self.memberEdit = MemberEdit(self, self.display)
         self.selectedButton = None
     def createAddNodeButton(self):
         self.addNode = Button(self, text="Add Node", command = self.onAddNodeClicked)
@@ -28,10 +30,10 @@ class TrussControls(Frame):
         self.selectNode = Button(self, text="Select Node", command = self.onSelectNodeClicked)
     def createAddMemberButton(self):
         self.addMember = Button(self, text="Add Member", command = self.onAddMemberClicked)
+    def createSelectMemberButton(self):
+        self.selectMember = Button(self, text="Select Member", command = self.onSelectMemberClicked)
     def createComputeButton(self):
         self.compute = Button(self, text="Compute", command= self.compute)
-    def setNodeDisplay(self, node):
-        self.nodeEdit.displayNode(node)
     def onAddNodeClicked(self):
         self.setState(STATE_ADD_NODE)
         self.selectButton(self.addNode)
@@ -41,13 +43,24 @@ class TrussControls(Frame):
     def onAddMemberClicked(self):
         self.setState(STATE_ADD_MEMBER)
         self.selectButton(self.addMember)
+    def onSelectMemberClicked(self):
+        self.setState(STATE_SELECT_MEMBER)
+        self.selectButton(self.selectMember)
     def arrangeWidgets(self):
         self.addNode.grid(row = 0, column = 0)
         self.selectNode.grid(row = 0, column = 1)
         self.addMember.grid(row = 1, column = 0)
+        self.selectMember.grid(row = 1, column = 1)
         self.compute.grid(row = 2, column = 0, columnspan = 2)
         self.showNodeEdit()
         self.hideNodeEdit()
+        self.showMemberEdit()
+        self.hideMemberEdit()
+    def setNodeDisplay(self, node):
+        self.nodeEdit.displayNode(node)
+    def setMemberDisplay(self, member):
+        self.showMemberEdit()
+        self.memberEdit.member = member
     def compute(self):
         self.display.computeForces()
         self.display.refreshMembers()
@@ -65,9 +78,15 @@ class TrussControls(Frame):
             self.hideNodeEdit()
             self.display.selectNode(None)
     def showNodeEdit(self):
-        self.nodeEdit.grid(row = 3, column = 0, columnspan = 2)
+        self.nodeEdit.grid(row = 3, column = 0, columnspan = 2, ipadx = 5, ipady = 5)
+        self.hideMemberEdit()
     def hideNodeEdit(self):
         self.nodeEdit.grid_remove()
+    def showMemberEdit(self):
+        self.memberEdit.grid(row = 4, column = 0, columnspan = 2, ipadx = 5, ipady = 5)
+        self.hideNodeEdit()
+    def hideMemberEdit(self):
+        self.memberEdit.grid_remove()
         
 class NodeEdit(Frame):
     def __init__(self, master, display):
@@ -125,3 +144,22 @@ class NodeEdit(Frame):
             self.display.selectNode(self.node)
     def deleteNode(self):
         self.display.deleteNodeAt(self.node.position)
+
+
+class MemberEdit(Frame):
+    def __init__(self, master, display):
+        Frame.__init__(self, master)
+        self.member = None
+        self.display = display
+        self.grid()
+        self.config(relief = GROOVE, bd = 2)
+        self.createWidgets()
+        self.arrangeWidgets()
+    def createWidgets(self):
+        self.label = Label(self, text = "Member")
+        self.remove = Button(self, text = "Remove", command = self.deleteMember)
+    def arrangeWidgets(self):
+        self.label.grid(row = 0, column = 0)
+        self.remove.grid(row = 1, column = 0)
+    def deleteMember(self):
+        self.display.deleteMember(self.member)

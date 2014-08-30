@@ -10,6 +10,8 @@ from States import *
 
 NODE_RADIUS = 7
 NODE_SELECT_RADIUS = 10
+MEMBER_THICKNESS = 3
+MEMBER_SELECT_RADIUS = 10
 LEFT_MOUSE = "<Button-1>"
 
 
@@ -23,6 +25,7 @@ class TrussDisplay(Truss, Canvas):
         self.setupListeners()
     def populate(self, nodes, members):
         self.selectedNode = None
+        self.selectedMember = None
         self.createNodes(nodes)
         self.createMembers(members)
     def createNodes(self, nodes):
@@ -45,6 +48,14 @@ class TrussDisplay(Truss, Canvas):
         return self.winfo_height()
     def getWidth(self):
         return self.winfo_width()
+    def selectMember(self, member):
+        if self.selectedMember:
+            self.itemconfig(self.selectedMember.line, fill = "black")
+            self.selectedMember = None
+        if member:
+            self.itemconfig(member.line, fill = "blue")
+            self.selectedMember = member
+            self.controls.setMemberDisplay(member)          
     def selectNode(self, node):
         if self.selectedNode:
             self.itemconfig(self.selectedNode.UIElement, fill = "black")
@@ -75,6 +86,10 @@ class TrussDisplay(Truss, Canvas):
                 self.connectNodes(self.tempNode, node)
                 self.state = STATE_ADD_MEMBER
                 self.selectNode(None)
+        elif self.state == STATE_SELECT_MEMBER:
+            member = self.getMemberNear(Vector((event.x, event.y)), MEMBER_SELECT_RADIUS)
+            if member:
+                self.selectMember(member)
         else:
             print "Error - click not handled properly"
         print self
@@ -122,7 +137,8 @@ class TrussDisplay(Truss, Canvas):
                     pass
                 p1 = member.node1.position
                 p2 = member.node2.position
-                member.line = self.create_line(p1[0], p1[1], p2[0], p2[1])
+                member.line = self.create_line(p1[0], p1[1], p2[0], p2[1], \
+                    width = MEMBER_THICKNESS)
                 if member.force != None:
                     member.forceLabel = self.create_text((p1[0] + p2[0]) / 2.0 + 10,
                                                          (p1[1] + p2[1]) / 2.0 + 10,
