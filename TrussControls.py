@@ -105,7 +105,8 @@ class NodeEdit(Frame):
         self.positionY = LabelEntry(self, "Y Position: ", 3)
         self.fixedX = LabelCheck(self, "Fix X: ")
         self.fixedY = LabelCheck(self, "Fix Y: ")
-        self.load = LabelEntry(self, "Load: ", 20)
+        self.loadX = LabelEntry(self, "X Load: ", 4)
+        self.loadY = LabelEntry(self, "Y Load: ", 4)
         self.update = Button(self, text = "Update", command = self.updateNode)
         self.remove = Button(self, text = "Remove", command = self.deleteNode)
     def arrangeWidgets(self):
@@ -114,7 +115,8 @@ class NodeEdit(Frame):
         self.positionY.grid(row = 1, column = 1)
         self.fixedX.grid(row = 2, column = 0)
         self.fixedY.grid(row = 2, column = 1)
-        self.load.grid(row = 3, column = 0, columnspan = 2)
+        self.loadX.grid(row = 3, column = 0)
+        self.loadY.grid(row = 3, column = 1)
         self.update.grid(row = 4, column = 0)
         self.remove.grid(row = 4, column = 1)
     def displayNode(self, node):
@@ -127,19 +129,21 @@ class NodeEdit(Frame):
             self.positionY.set(self.node.position[1])
             self.fixedY.set(self.node.fixedY)
             self.fixedX.set(self.node.fixedX)
-            self.load.set(repr(self.node.loads))
+            self.loadX.set(self.node.load[0])
+            self.loadY.set(self.node.load[1])
         else:
             self.positionX.set("")
             self.positionY.set("")
             self.fixedX.set(False)
             self.fixedY.set(False)
-            self.load.set("[]")
+            self.loadX.set("")
+            self.loadY.set("")
     def updateNode(self):
         if self.node:
-            self.node.position = Vector((int(self.positionX.get()), int(self.positionY.get())))
+            self.node.setPosition(int(self.positionX.get()), int(self.positionY.get()))
             self.node.fixedX = 1 == self.fixedX.get()
             self.node.fixedY = 1 == self.fixedY.get()
-            self.node.loads[:] = eval(self.load.get())
+            self.node.setLoad(int(self.loadX.get()), int(self.loadY.get()))
             self.display.refresh(self.node)
             self.display.selectNode(self.node)
     def deleteNode(self):

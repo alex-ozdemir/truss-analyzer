@@ -12,9 +12,9 @@ from operator import add
 #  Member - a connection between nodes in a truss
 
 class Node(object):
-    def __init__(self, position, loads = [], fixedX = False, fixedY = False):
+    def __init__(self, position, load = Vector((0,0)), fixedX = False, fixedY = False):
         self.position = Vector(position)
-        self.loads =[Vector(load) for load in loads]
+        self.load = load
         self.fixedX = fixedX
         self.fixedY = fixedY
     def distance(self, position):
@@ -23,8 +23,8 @@ class Node(object):
         return self.position == other.position
     def __str__(self):
         result = "Node at " + str(self.position)
-        if len(self.loads) > 0:
-            result += ", with loads " + str(self.loads)
+        if self.load != Vector((0,0)):
+            result += ", with loads " + str(self.load)
         if self.fixedX:
             result += ", with X fixed"
         if self.fixedY:
@@ -33,9 +33,13 @@ class Node(object):
     def __repr__(self):
         return "Node(" +\
                repr(self.position) + ", " + \
-               repr(self.loads) + ", " + \
+               repr(self.load) + ", " + \
                repr(self.fixedX) + ", " + \
                repr(self.fixedY) + ")"
+    def setLoad(self, x, y):
+        self.load = Vector((x, y))
+    def setPosition(self, x, y):
+        self.position = Vector((x, y))
 
 class Member(object):
     def __init__(self, node1, node2, force = None):
@@ -165,7 +169,7 @@ class Truss(object):
                     row.append(float(vector[0]) / vector.length)
                 else:
                     row.append(0)
-            row.append(-reduce(add,[x[0] for x in node.loads], 0))
+            row.append(-node.load[0])
             self.matrix.append(row)
     def addYEquation(self, node):
         if not node.fixedY:
@@ -176,7 +180,7 @@ class Truss(object):
                     row.append(float(vector[1]) / vector.length)
                 else:
                     row.append(0)
-            row.append(-reduce(add,[x[1] for x in node.loads], 0))
+            row.append(-node.load[1])
             self.matrix.append(row)
             
     def __eq__(self, other):
@@ -202,59 +206,3 @@ class Truss(object):
 def sameElements(l1, l2):
     return all([e in l1 for e in l2]) and \
            all([e in l2 for e in l1])    
-def test_init():
-    a = Node((2, 3), [])
-def test_str():
-    a = Node((2, 3), [])
-    print a
-def test_eq():
-    a = Node((4,5))
-    b = Node((4,5))
-    if a == b:
-        print "test passed"
-    else:
-        print "test failed"
-    c = Node((5,6))
-    t1 = Truss([a,c])
-    t2 = Truss([a])
-    if t1 == t2:
-        print "test failed"
-    else:
-        print "test passed"
-def test_duplicate_connection():
-    a = Node((4,5))
-    b = Node((4,6))
-    b.addConnection(a)
-    try:
-        b.addConnection(a)
-        print "test failed"
-    except:
-        print "test passed"
-def test_repr():
-    t = Truss()
-    t.createNode((4,5))
-    print "Original: "
-    print t
-    print "Representation: "
-    print repr(t)
-    print "Recreated: "
-    print eval(repr(t))
-    if eval(repr(t)) == t:
-        print "test passed"
-    else:
-        print "test failed"
-def simpleTruss():
-    t = Truss()
-    t.createNode((0,0))
-    t.createNode((3,3))
-    t.createNode((6,0))
-    t.connectNodes(Node((0,0)), Node((3,3)))
-    t.connectNodes(Node((0,0)), Node((6,0)))
-    t.connectNodes(Node((6,0)), Node((3,3)))
-    t.nodes[1].loads.append(Vector((0,-100)))
-    t.nodes[0].fixedX = True
-    t.nodes[0].fixedY = True
-    t.nodes[2].fixedY = True
-    print "t:\n",t
-    return t
-t = simpleTruss()

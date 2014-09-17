@@ -92,7 +92,6 @@ class TrussDisplay(Truss, Canvas):
                 self.selectMember(member)
         else:
             print "Error - click not handled properly"
-        print self
     def connectNodes(self, node1, node2):
         try:
             self.trussclass.connectNodes(self, node1, node2)
@@ -163,8 +162,6 @@ class TrussDisplay(Truss, Canvas):
         super(TrussDisplay, self).deleteMember(member)
     def loadFromStr(self, string):
         temp = eval(string)
-        # TODO: PRINT STATEMENT
-        print temp
         self.removeAll()
         self.populate(temp.nodes, temp.members)
         

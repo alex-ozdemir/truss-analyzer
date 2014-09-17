@@ -15,7 +15,6 @@ class Matrix(object):
         """Creates a matrix as a list of row/lists"""
         self.matrix = matrix
         self.setAndValidateDimensions()
-        print "Matrix\n", self
         
     def setAndValidateDimensions(self):
         self.height = len(self.matrix)
@@ -35,7 +34,6 @@ class Matrix(object):
             self.makeNonZeroDiagonal(c)
             for r in range(self.height):
                 self.normalizeCell(r, c)
-                print "\n", self
     def toFloat(self):
         for r in range(self.height):
             for c in range(self.width):

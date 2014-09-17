@@ -52,17 +52,27 @@ class TrussApp(Frame):
             f.close()
     def load(self):
         f = tkFileDialog.askopenfile(mode='r', **self.fileDialogOptions)
+        self.loadFromFile(f)
+    def loadFromFile(self, file):
         string = f.read()
         f.close()
-        self.display.loadFromStr(string)
-        
+        self.display.loadFromStr(string)        
     def arrangeWidgets(self):
         self.display.pack(side = LEFT, fill = BOTH, expand = 1)
         self.controls.pack(side = RIGHT)
 
         
-    
+
 root = Tk()
 app = TrussApp(root)
+if len(sys.argv) > 1:
+    try:
+        f = open(sys.argv[1])
+        app.loadFromFile(f)
+    except:
+        print "Could not load truss file: %s" % (sys.argv[1])
 app.mainloop()
-root.destroy()
+try:
+    root.destroy()
+except:
+    "Application has closed"
