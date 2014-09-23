@@ -21,7 +21,20 @@ class Vector(tuple):
         return Vector([self[i] - other[i] for i in range(self.size)])
     def __neg__(self):
         return Vector([-self[i] for i in range(self.size)])
+    def dot(self, other):
+        assert(self.size == other.size)
+        return sum([p[0]*p[1] for p in zip(self, other)])
+    def scale(self, scalar):
+        return Vector([float(x) * scalar for x in self])
+    def norm(self):
+        return self.scale( 1. / self.length)
+    def proj(self, other):
+        return other.norm().scale(float(self.dot(other)) / other.length)
     def __repr__(self):
         return "Vector(%s)" % (self.superclass.__repr__(self))
     def __str__(self):
         return "<" + join([str(x) for x in self],", ") + ">"
+
+x = Vector((1, 0))
+x5 = Vector((5, 0))
+v = Vector((2, 1))
