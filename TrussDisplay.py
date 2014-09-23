@@ -42,7 +42,7 @@ class TrussDisplay(Truss, Canvas):
         self['bd'] = 1
         self['bg'] = "#DDDDE4"
     def setupListeners(self):
-        self.state = STATE_ADD_NODE
+        self.state = STATE_SELECT_NODE
         self.bind(LEFT_MOUSE, self.click)
     def getHeight(self):
         return self.winfo_height()
