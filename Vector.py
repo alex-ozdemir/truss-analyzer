@@ -1,6 +1,5 @@
 # Alex Ozdemir
 # aozdemir@hmc.edu
-# 9 August 2014
 
 # Vector class
 from math import sqrt
@@ -30,6 +29,8 @@ class Vector(tuple):
         return self.scale( 1. / self.length)
     def proj(self, other):
         return other.norm().scale(float(self.dot(other)) / other.length)
+    def reject(self, other):
+        return self - self.proj(other)
     def __repr__(self):
         return "Vector(%s)" % (self.superclass.__repr__(self))
     def __str__(self):
